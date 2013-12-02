@@ -1,0 +1,391 @@
+import init.sc7710g.usb.rc
+
+on early-init
+
+    export EXTERNAL_STORAGE /mnt/external
+    export SECONDARY_STORAGE /mnt/sdcard
+    export SECOND_STORAGE_TYPE 1
+
+    mkdir /mnt/sdcard 0000 system system
+    mkdir /mnt/external 0000 system system    
+
+    symlink /dev/ts0710mux22  /dev/vbpipe0
+    symlink /dev/ts0710mux23  /dev/vbpipe6
+# radio pipe
+    mkdir /dev/rpipe 0550 radio radio
+    pipe 666 /dev/rpipe/ril.vt.0
+    pipe 666 /dev/rpipe/ril.vt.1
+    pipe 666 /dev/rpipe/ril.vt.2
+
+
+on post-fs
+    insmod /system/lib/modules/ump.ko
+    insmod /system/lib/modules/mali.ko
+    setprop ro.crypto.fuse_sdcard true
+
+on post-fs-data
+    # we will remap this as /storage/sdcard0 with the sdcard fuse tool
+    mkdir /data/media 0775 media_rw media_rw
+    chown media_rw media_rw /data/media
+    mkdir /data/misc/sensors 0777 system system
+
+    # Set indication (checked by vold) that we have finished this action
+    setprop vold.post_fs_data_done 1
+on init
+    mkdir /dev/pipe 0755 system system
+    pipe 666 /dev/pipe/mmi.audio.ctrl
+
+on boot
+    chown system system /sys/class/backlight/sprd_backlight/brightness
+
+    chown system system /sys/class/compass/akm8963/enable_acc
+    chown system system /sys/class/compass/akm8963/enable_mag
+    chown system system /sys/class/compass/akm8963/enable_ori
+    chown system system /sys/class/compass/akm8963/delay_acc
+    chown system system /sys/class/compass/akm8963/delay_mag
+    chown system system /sys/class/compass/akm8963/delay_ori
+    chown system system /sys/class/compass/akm8963/accel
+
+    insmod /system/lib/modules/ft5306_ts.ko
+    insmod /system/lib/modules/ltr_558als.ko
+    chown system system /dev/ltr_558als
+    chmod 0664 /dev/ltr_558als
+
+    chown system system /sys/class/power_supply
+
+    chmod 666 /dev/ttyS0
+    chmod 666 /proc/bluetooth/sleep/proto
+    chmod 660 /sys/class/rfkill/rfkill0/state
+    chmod 660 /sys/class/rfkill/rfkill0/type
+    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/state
+    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/type
+    
+    chmod 660 /sys/class/rfkill/rfkill2/state
+    chmod 660 /sys/class/rfkill/rfkill2/type
+    chown bluetooth bluetooth /sys/class/rfkill/rfkill2/state
+    chown bluetooth bluetooth /sys/class/rfkill/rfkill2/type
+
+    chown bluetooth system /proc/bluetooth/sleep/proto
+    mkdir /data/misc/wifi/sockets 0770 wifi wifi
+    mkdir /data/system 0770 system system
+    mkdir /etc/wifi 0770 wifi wifi
+    mkdir /data/system/wpa_supplicant 0771 wifi wifi
+    mkdir /data/misc/dhcp 0770 dhcp dhcp
+    chown dhcp dhcp /data/misc/dhcp
+    setprop wifi.interface wlan0
+    chown system system /proc/sys/kernel/printk
+
+    chmod 664 /sys/module/ipc_sdio/parameters/sdio_tx_wait_time
+    chown root radio /sys/module/ipc_sdio/parameters/sdio_tx_wait_time
+
+    copy /dev/sprd-watchdog /dev/null
+
+    write /proc/sys/net/ipv6/conf/all/disable_ipv6 1
+    write /proc/sys/net/ipv6/conf/default/disable_ipv6 1
+
+on property:ro.debuggable=1
+    write /proc/input_power 1
+    mount debugfs debugfs /sys/kernel/debug
+    write /proc/sys/kernel/sysrq 1
+    setrlimit 4 -1 -1
+    write /proc/sys/kernel/core_pattern /mnt/sdcard/slog/corefile/core-%e-%p  
+    write /proc/sys/fs/suid_dumpable 1
+
+on property:ro.debuggable=0
+    write /proc/input_power 0
+
+#modem_control
+#service modem_control /system/bin/logwrapper /modem_control
+service modem_control /modem_control
+    class main
+    user root
+    oneshot
+    
+on property:lmk.autocalc=false
+    write /sys/module/lowmemorykiller/parameters/adj 0,1,2,4,9,15
+    write /sys/module/lowmemorykiller/parameters/minfree 1024,4096,6144,8192,9607,11444
+
+on property:zram_for_android.enable=true
+    write /sys/module/lowmemorykiller/parameters/lowmem_minfile_check_enable 1
+    write /sys/module/lowmemorykiller/parameters/adj 1,2,8,9,11,15
+    write /sys/module/lowmemorykiller/parameters/minfree 2048,4096,6144,8192,10240,15360
+
+
+on property:ksm.support=true
+        write /sys/kernel/mm/ksm/sleep_millisecs  4000
+        write /sys/kernel/mm/ksm/pages_to_scan    128
+        write /sys/kernel/mm/ksm/run              1
+
+on property:zram.support=true
+    setprop zram.disksize 180
+    setprop sys.vm.swappiness 60
+    start zram	
+
+service zram /system/xbin/zram.sh
+        disabled
+        oneshot
+
+#telephony service
+service sprd_monitor /system/bin/sprd_monitor
+    class core
+    user system
+    group system radio shell
+    oneshot
+
+service engservicet /system/bin/engservice -t 1
+    socket engtd stream 660 system system
+    class core
+    user system
+    group system
+    disabled
+    oneshot
+
+service engmodemclientt /system/bin/engmodemclient -t 1
+    class core
+    user system
+    group system radio
+    disabled
+    oneshot
+
+service engpcclientt /system/bin/engpcclient -t 1
+    class core
+    user system
+    group system radio shell
+    disabled
+    oneshot
+service vcharged7 /bin/vcharged7
+    class core
+    user system
+    group system shell
+    oneshot
+
+service engservicew /system/bin/engservice -t 0
+    socket engw stream 660 system system
+    class core
+    user system
+    group system
+    disabled
+    oneshot
+
+service engmodemclientw /system/bin/engmodemclient -t 0
+    class core
+    user system
+    group system radio
+    disabled
+    oneshot
+
+service engpcclientw /system/bin/engpcclient -t 0
+    class core
+    user system
+    group system radio shell
+    disabled
+    oneshot
+
+service engsetmacaddr /system/bin/engsetmacaddr
+    class main
+    user system
+    disabled
+    oneshot
+
+service phoneserver_w /system/bin/phoneserver -m w
+    class core
+    user root
+    group radio system shell
+    disabled
+    oneshot
+
+
+service charge /bin/charge
+    class charger
+    user root
+    oneshot
+
+
+#wcdma rild service
+service wril-daemon /system/bin/rild_sp -l /system/lib/libreference-ril_sp.so -m w -n 0
+    class core
+    socket rild stream 660 root radio
+    socket rild-debug stream 660 radio system
+    disabled
+    user root
+    group radio cache inet misc audio sdcard_rw log shell
+
+service wril-daemon1 /system/bin/rild_sp -l /system/lib/libreference-ril_sp.so -m w -n 1
+    class core
+    socket rild1 stream 660 root radio
+    socket rild-debug1 stream 660 radio system
+    disabled
+    user root
+    group radio cache inet misc audio sdcard_rw log shell
+
+service wril-daemon2 /system/bin/rild_sp  -l /system/lib/libreference-ril_sp.so -m w -n 2
+    class core
+    socket rild2 stream 660 root radio
+    socket rild-debug2 stream 660 radio system
+    disabled
+    user root
+    group radio cache inet misc audio sdcard_rw log shell
+
+#nvitemd
+service nvitemd /system/bin/nvitemd /dev/ts0710mux20 ./nvitem.cfg
+    class core
+    user root
+    group system radio shell
+    oneshot
+
+# create virtual SD card at /storage/sdcard0, based on the /data/media directory
+# daemon will drop to user/group system/media_rw after initializing
+# underlying files in /data/media will be created with user and group media_rw (1023)
+service sdcard /system/bin/sdcard /data/media 1023 1023
+    class main
+
+
+service hfag /system/bin/sdptool add --channel=10 HFAG
+    user bluetooth
+    group bluetooth net_bt_admin
+    disabled
+    oneshot
+
+service hsag /system/bin/sdptool add --channel=11 HSAG
+    user bluetooth
+    group bluetooth net_bt_admin
+    disabled
+    oneshot
+
+service opush /system/bin/sdptool add --channel=12 OPUSH
+    user bluetooth
+    group bluetooth net_bt_admin
+    disabled
+    oneshot
+
+service pbap /system/bin/sdptool add --channel=19 PBAP
+    user bluetooth
+    group bluetooth net_bt_admin
+    disabled
+    oneshot
+
+service akmd /system/bin/akmd8963 -m 4
+    class main
+    oneshot
+
+service hciattach /system/bin/logwrapper /system/bin/hciattach -n /dev/ttyS0 bk3211 921600
+    class main
+    user system
+    group bluetooth net_bt_admin
+    disabled
+    oneshot
+
+service btld  /system/bin/btld -lpm 0 -hb 3000000
+    user root
+    group bluetooth net_bt_admin
+    disabled
+    oneshot
+
+
+service p2p_supplicant /system/bin/wpa_supplicant \
+	-iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf -N \
+	-ip2p0 -Dnl80211 -c/data/misc/wifi/p2p_supplicant.conf -e/data/misc/wifi/entropy.bin -puse_p2p_group_interface=1
+	#   we will start as root and wpa_supplicant will switch to user wifi
+	#   after setting up the capabilities required for WEXT
+	#   user wifi
+	#   group wifi inet keystore
+	class main
+	socket wpa_wlan0 dgram 660 wifi wifi
+	disabled
+	oneshot
+
+service wpa_supplicant /system/bin/wpa_supplicant \
+    -Dnl80211 -iwlan0 -c/data/misc/wifi/wpa_supplicant.conf -dd
+    group system wifi inet keystore
+    socket wpa_wlan0 dgram 660 wifi wifi
+    class main
+    disabled
+    oneshot
+
+service dhcpcd_wlan0 /system/bin/dhcpcd -ABKL
+    group system dhcp
+    disabled
+    oneshot
+
+service dhcpcd_p2p /system/bin/dhcpcd -ABKL
+    group system dhcp
+    disabled
+    oneshot
+
+service iprenew_wlan0 /system/bin/dhcpcd -n
+    class main
+    group system dhcp
+    disabled
+    oneshot
+
+service iprenew_p2p /system/bin/dhcpcd -n
+    class main
+    group system dhcp
+    disabled
+    oneshot
+
+service dhcpcd_bnep0 /system/bin/dhcpcd -ABKL
+    class main
+    disabled
+    oneshot
+
+service iprenew_bnep0 /system/bin/dhcpcd -n
+    class main
+    disabled
+    oneshot
+
+service slog /system/bin/slog
+    class main
+    user root
+
+service engmoded /system/bin/engmoded
+    class main
+    user root
+
+#create symlink
+service smd_symlink /system/bin/ext_symlink.sh -u
+    user root
+    disabled
+    oneshot
+
+#data on
+service data_on /system/bin/ext_data.sh  -u
+    user root
+    disabled
+    oneshot
+
+#data off
+service data_off /system/bin/ext_data.sh  -d
+    user root
+    disabled
+    oneshot
+
+#kill td app
+service kill_td_phone /system/bin/ext_kill.sh  -t
+    user root
+    disabled
+    oneshot
+
+#kill w app
+service kill_w_phone /system/bin/ext_kill.sh  -w
+    user root
+    disabled
+    oneshot
+
+#set mac addr
+service set_mac /system/bin/ext_chown.sh  -e
+    user root
+    disabled
+    oneshot
+#yingmin.piao for #Bug189515 kdump switch 20130715 --begin
+# Used to set enable kdump function
+on property:persist.sys.kdump.enable=1
+    write /proc/sysrq-trigger x
+
+on property:persist.sys.kdump.enable=0
+    write /proc/sysrq-trigger y
+
+# Used to set namual kdump
+on property:sys.manual.panic=*
+    write /proc/sysrq-trigger c
+#yingmin.piao for #Bug189515 kdump switch 20130715 --end

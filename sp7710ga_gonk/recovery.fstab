@@ -1,0 +1,20 @@
+# mount point	fstype		device
+
+/sdcard		vfat		/dev/block/platform/sprd-sdhci.0/mmcblk0p1
+/system		yaffs2		system
+/cache		yaffs2		cache
+/data		yaffs2		userdata
+/misc 		mtd 		misc
+/boot		mtd		boot
+/recovery	mtd		recovery
+/fixnv		yaffs2		fixnv		no-checkpoint,no-rest-block
+/runtimenv		yaffs2		runtimenv		no-checkpoint,no-rest-block
+/backupfixnv		yaffs2		backupfixnv		no-checkpoint,no-rest-block
+/productinfo		yaffs2		productinfo		no-checkpoint,no-rest-block
+/intmemory      yaffs2          intmemory
+# added new fstypes
+/modem		mtd		modem
+/vmjaluna		mtd		vmjaluna
+/dsp		mtd		dsp
+/uboot		mtd		2ndbl
+/spl        mtd     spl 

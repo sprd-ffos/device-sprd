@@ -1,0 +1,30 @@
+
+ro.sf.lcd_width=52
+ro.sf.lcd_height=92
+ro.opengles.version=131072
+ro.product.hardware=V1.0.0
+
+debug.hwui.render_dirty_regions=false
+
+# delay for ConnectivityChange broadcast (ms)
+conn.connectivity_change_delay = 0
+
+#added cphs operatorNameDisplay Rule; which will show cphs first
+ro.operatorname.cphsfirst=false
+
+#added oplpnn operator NameDisplay surport;
+ro.operatorname.oplpnnsurport=true
+
+#if our product support single link version
+ro.system.property.singleconn=true
+
+# Can not install packages if the data space has used more than the following ratio value
+ro.installer.limitpercent=85
+
+# Add Porperty for orange
+ro.support.orange=false
+
+#if our product support VT
+ro.device.support.vt=0
+#for emergency call
+ro.ril.ecclist=000,08,110,999,118,119,120,122,911,112
