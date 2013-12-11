@@ -2,12 +2,13 @@ import init.sc7710g.usb.rc
 
 on early-init
 
-    export EXTERNAL_STORAGE /mnt/external
-    export SECONDARY_STORAGE /mnt/sdcard
-    export SECOND_STORAGE_TYPE 1
+    export EXTERNAL_STORAGE /mnt/sdcard
+    #export SECONDARY_STORAGE /mnt/sdcard
+    #export SECOND_STORAGE_TYPE 1
 
     mkdir /mnt/sdcard 0000 system system
-    mkdir /mnt/external 0000 system system    
+    #mkdir /mnt/external 0000 system system    
+    symlink /mnt/sdcard /sdcard
 
     symlink /dev/ts0710mux22  /dev/vbpipe0
     symlink /dev/ts0710mux23  /dev/vbpipe6
@@ -236,8 +237,8 @@ service nvitemd /system/bin/nvitemd /dev/ts0710mux20 ./nvitem.cfg
 # create virtual SD card at /storage/sdcard0, based on the /data/media directory
 # daemon will drop to user/group system/media_rw after initializing
 # underlying files in /data/media will be created with user and group media_rw (1023)
-service sdcard /system/bin/sdcard /data/media 1023 1023
-    class main
+#service sdcard /system/bin/sdcard /data/media 1023 1023
+#    class main
 
 
 service hfag /system/bin/sdptool add --channel=10 HFAG
