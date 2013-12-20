@@ -207,7 +207,7 @@ service wril-daemon /system/bin/rild_sp -l /system/lib/libreference-ril_sp.so -m
     class core
     socket rild stream 660 root radio
     socket rild-debug stream 660 radio system
-    disabled
+    #disabled
     user root
     group radio cache inet misc audio sdcard_rw log shell
 
@@ -215,9 +215,22 @@ service wril-daemon1 /system/bin/rild_sp -l /system/lib/libreference-ril_sp.so -
     class core
     socket rild1 stream 660 root radio
     socket rild-debug1 stream 660 radio system
-    disabled
+    #disabled
     user root
     group radio cache inet misc audio sdcard_rw log shell
+
+service rilproxy1 /system/bin/rilproxy -c 1
+    class core
+    socket rilproxy1 stream 660 root system
+    user root
+    group radio
+
+
+service rilproxy2 /system/bin/rilproxy -c 2
+    class core
+    socket rilproxy2 stream 660 root system
+    user root
+    group radio
 
 #nvitemd
 service nvitemd /system/bin/nvitemd /dev/ts0710mux20 ./nvitem.cfg

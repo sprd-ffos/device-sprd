@@ -30,18 +30,22 @@ WITH_DEXPREOPT=true
 endif
 
 TARGET_NO_BOOTLOADER := true
-TARGET_NO_KERNEL := true
+TARGET_NO_KERNEL := false
 
 # config u-boot
 #TARGET_NO_BOOTLOADER := false
 #UBOOT_DEFCONFIG := sp7710g2
 
 # config kernel
-
+INSTALLED_KERNEL_TARGET := kernel
+ifneq ($(strip $(DSDS)),)
+KERNEL_DEFCONFIG := sp7710ga-native_defconfig
+else
 ifeq ($(TARGET_HVGA_ENABLE), true)
 KERNEL_DEFCONFIG := sp7710ga-native-hvga_defconfig
 else
 KERNEL_DEFCONFIG := sp7710ga-native_defconfig
+endif
 endif
 USES_UNCOMPRESSED_KERNEL := true
 BOARD_KERNEL_BASE := 0x00000000

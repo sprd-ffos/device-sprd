@@ -13,6 +13,10 @@ PRODUCT_PROPERTY_OVERRIDES := \
 	ro.moz.ril.query_icc_count=true \
 	ro.moz.mute.call.to_ril=true
 
+ifneq ($(strip $(DSDS)),)
+	PRODUCT_PROPERTY_OVERRIDES += ro.moz.ril.numclients=2
+endif
+
 # original apps copied from generic_no_telephony.mk
 PRODUCT_PACKAGES := \
 	librecovery \
@@ -90,7 +94,6 @@ PRODUCT_PACKAGES += \
             $(SPRD_FM_APP)
 PRODUCT_COPY_FILES := \
 	$(BOARDDIR)/init.rc:root/init.rc \
-	$(BOARDDIR)/init.sc7710g.rc:root/init.sc7710g.rc \
 	$(BOARDDIR)/init.sc7710g.usb.rc:root/init.sc7710g.usb.rc \
 	$(BOARDDIR)/ueventd.sc7710g.rc:root/ueventd.sc7710g.rc \
 	$(BOARDDIR)/fstab.sc7710g:root/fstab.sc7710g \
@@ -115,7 +118,13 @@ PRODUCT_COPY_FILES := \
 	frameworks/base/data/etc/android.hardware.sensor.proximity.xml:system/etc/permissions/android.hardware.sensor.proximity.xml \
 	frameworks/base/data/etc/android.hardware.telephony.gsm.xml:system/etc/permissions/android.hardware.telephony.gsm.xml \
 	frameworks/base/data/etc/android.hardware.usb.accessory.xml:system/etc/permissions/android.hardware.usb.accessory.xml \
-	frameworks/base/data/etc/android.software.live_wallpaper.xml:system/etc/permissions/android.software.live_wallpaper.xml \
+	frameworks/base/data/etc/android.software.live_wallpaper.xml:system/etc/permissions/android.software.live_wallpaper.xml
+
+ifneq ($(strip $(DSDS)),)
+PRODUCT_COPY_FILES += $(BOARDDIR)/init.sc7710g.dsds.rc:root/init.sc7710g.rc
+else
+PRODUCT_COPY_FILES += $(BOARDDIR)/init.sc7710g.rc:root/init.sc7710g.rc
+endif
 
 #$(call inherit-product, $(BOARDDIR)/../common/apps/engineeringmodel/module.mk)
 #$(call inherit-product, $(BOARDDIR)/../common/apps/modemassert/module.mk)

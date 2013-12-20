@@ -24,4 +24,12 @@ LOCAL_PATH := $(call my-dir)
 #endif # End of U-Boot
 
 # Compile Linux Kernel
-include kernel/AndroidKernel.mk
+-include kernel/AndroidKernel.mk
+
+#ifeq ( $(DSDS) , 2 )
+file := $(INSTALLED_KERNEL_TARGET)
+ALL_PREBUILT += $(file)
+$(file) : $(TARGET_PREBUILT_KERNEL) | $(ACP)
+	$(transform-prebuilt-to-target)
+#endif
+
