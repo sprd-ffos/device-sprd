@@ -38,7 +38,7 @@ TARGET_NO_KERNEL := false
 
 # config kernel
 INSTALLED_KERNEL_TARGET := kernel
-ifneq ($(strip $(DSDS)),)
+ifneq ($(strip $(MOZ_B2G_DSDS)),)
 KERNEL_DEFCONFIG := sp7710ga-native_defconfig
 else
 ifeq ($(TARGET_HVGA_ENABLE), true)

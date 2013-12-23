@@ -57,7 +57,7 @@ else
   PRODUCT_PROPERTY_OVERRIDES += persist.sys.kdump.enable=1
 endif
 
-ifneq ($(strip $(DSDS)),)
+ifneq ($(strip $(MOZ_B2G_DSDS)),)
 PRODUCT_PROPERTY_OVERRIDES += ro.sf.lcd_density=240
 else
 ifeq ($(TARGET_HVGA_ENABLE), true)

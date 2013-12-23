@@ -26,7 +26,7 @@ LOCAL_PATH := $(call my-dir)
 # Compile Linux Kernel
 -include kernel/AndroidKernel.mk
 
-#ifeq ( $(DSDS) , 2 )
+#ifeq ( $(MOZ_B2G_DSDS) , 2 )
 file := $(INSTALLED_KERNEL_TARGET)
 ALL_PREBUILT += $(file)
 $(file) : $(TARGET_PREBUILT_KERNEL) | $(ACP)

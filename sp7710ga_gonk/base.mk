@@ -13,7 +13,7 @@ PRODUCT_PROPERTY_OVERRIDES := \
 	ro.moz.ril.query_icc_count=true \
 	ro.moz.mute.call.to_ril=true
 
-ifneq ($(strip $(DSDS)),)
+ifneq ($(strip $(MOZ_B2G_DSDS)),)
 	PRODUCT_PROPERTY_OVERRIDES += ro.moz.ril.numclients=2
 endif
 
@@ -120,7 +120,7 @@ PRODUCT_COPY_FILES := \
 	frameworks/base/data/etc/android.hardware.usb.accessory.xml:system/etc/permissions/android.hardware.usb.accessory.xml \
 	frameworks/base/data/etc/android.software.live_wallpaper.xml:system/etc/permissions/android.software.live_wallpaper.xml
 
-ifneq ($(strip $(DSDS)),)
+ifneq ($(strip $(MOZ_B2G_DSDS)),)
 PRODUCT_COPY_FILES += $(BOARDDIR)/init.sc7710g.dsds.rc:root/init.sc7710g.rc
 else
 PRODUCT_COPY_FILES += $(BOARDDIR)/init.sc7710g.rc:root/init.sc7710g.rc
